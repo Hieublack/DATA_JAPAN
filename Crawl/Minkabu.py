@@ -70,4 +70,15 @@ class Minkabu(setup.Setup):
         # self.driver.quit()
         return table[0]
 
+    def getPriceCloseByListCompany(self, list_company)-> None:
+        '''
+        input: list company
+        crawl close_price of each company in list_company
+        '''
+        for symbol in list_company:
+            # print(symbol)
+            df_price = self.getPriceCloseMikabu(symbol= symbol)
+            self.saveDataFrameCSV(df_price, symbol)
+        
+
 
