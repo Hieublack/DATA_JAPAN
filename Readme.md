@@ -18,6 +18,7 @@ Cách bổ sung code vào các file
     - Tạo một class (lấy tên là nguồn dữ liệu) và chuyển đổi các chức năng hiện tại (crawl, filter, getListCompany, ...) thành các method của class
 
 * Comment chức năng mỗi hàm trong chương trình của mình, ví dụ như sau:
+
         def saveDataFrameCSV(self, dataframe, file_name):
             '''
             save dataframe to csv file
