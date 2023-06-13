@@ -10,15 +10,18 @@ warnings.simplefilter("ignore", UserWarning)
 
 
 
+
 class GetPDF():
     def __init__(self,
                 path_all_com = 'Crawl/buffett/docs/List_company_23052023 - Listing.csv',
-                path_save = 'SAVE/Buffett/Data'):
+                path_save = 'SAVE/Buffett/Data',
+                time_sleep: int = 30):
         self.driver = webdriver.Edge()
         self.path_company = 'https://www.buffett-code.com/company'
         self.path_save = path_save
         self.path_all_com = path_all_com
         self.log_path = self.path_all_com.replace('.csv', '.log').replace('docs/', 'logs/')
+        self.time_sleep = time_sleep
     
     def get_data(self, link):
         '''
@@ -157,7 +160,7 @@ class GetPDF():
                         print(f'{self.path_save}/{id_company} - {year_} - {quy} - {id_link} - {msg} - {link_preview}')
                         df_check[f'download_{quy}'][id] = msg
                         df_check.to_csv(f'{self.path_save}/{id_company}/docs/check.csv', index=False)
-                        time.sleep(30)
+                        time.sleep(self.time_sleep)
 
 
     def save_pdf(self, 
@@ -171,7 +174,7 @@ class GetPDF():
         self.save_check_point(id_company)
         self.get_download_pdf(id_company)
 
-    def get_all_com(self):
+    def get_all_com(self, reverse:bool=False):
         '''
         Get all company
         '''
@@ -179,6 +182,8 @@ class GetPDF():
         lst_com = pd.read_csv(self.path_all_com)
         if 'check' not in lst_com.columns:
             lst_com['check'] = np.nan
+        if reverse:
+            lst_com = lst_com[::-1]
         for i in lst_com.index:
             id_company = lst_com['Symbol'][i]
             check = lst_com['check'][i]
@@ -191,4 +196,6 @@ class GetPDF():
                     msg = 'False'
                     log_message(f'Failed: ID {id_company}')
                 lst_com['check'][i] = msg
+                if reverse:
+                    lst_com.sort_index(inplace=True)
                 lst_com.to_csv(self.path_all_com, index=False)
