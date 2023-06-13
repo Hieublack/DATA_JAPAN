@@ -1,5 +1,5 @@
 # PATH_DRIVER = "C:/Program Files/chromedriver.exe"
-PATH_SAVE = "E:/JAPAN\DATA_JAPAN\SAVE"
+PATH_SAVE = "E:/JAPAN/DATA_JAPAN/SAVE"
 
 TIMELINE = {
     "START_DATE": "01/01/1950",
@@ -76,6 +76,7 @@ URL_BUFFETT = {
     }
 
 URL_IRBANK ={
+    "LIST_COMPANIES":           "",
     "COMPANY_LISTING":          "",
     "COMPANY_DELISTING":        "",
     "BALANCE_SHEET":            "",
