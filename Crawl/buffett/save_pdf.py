@@ -21,18 +21,33 @@ class GetPDF():
         self.log_path = self.path_all_com.replace('.csv', '.log').replace('docs/', 'logs/')
     
     def get_data(self, link):
+        '''
+        Get data from link of company
+        Input: link of company
+        Output: BeautifulSoup of company
+        '''
         self.driver.get(link)
         time.sleep(5)
         soup = BeautifulSoup(self.driver.page_source,'html.parser',from_encoding='utf-8')
         return soup
     
-    def get_table(self,soup = "", id_company = 5486): #Get table
+    def get_table(self,soup = "", id_company = 5486):
+        '''
+        Get table have link pdf in web
+        Input: BeautifulSoup of company
+        Output: table have link pdf in web
+        '''
         print(f"{self.path_company}/{id_company}/library")
         soup = self.get_data(f"{self.path_company}/{id_company}/library")
         table = soup.find_all('table')
         return table
     
-    def get_pdf_link(self,link_): #Get pdf link from pdf preview
+    def get_pdf_link(self,link_):
+        '''
+        Get download link pdf in web
+        Input: link preview pdf file
+        Output: link download pdf file
+        '''
         self.driver.get(link_)
         time.sleep(1)
         soup = BeautifulSoup(self.driver.page_source,'html.parser',from_encoding='utf-8')
@@ -44,7 +59,12 @@ class GetPDF():
 
 
     def create_link_df(self, 
-                       table): # Get table have link pdf in web
+                       table):
+        '''
+        Create dataframe have link pdf
+        Input: table have infor of link pdf
+        Output: dataframe have link pdf
+        '''
         json_company = {}
         for id_year, tr_year in enumerate(table[0].find_all('tr')):
             json_company_quy = {}
@@ -69,7 +89,12 @@ class GetPDF():
 
 
     def make_folder(self, 
-                    id_company:int): # Make folder save data
+                    id_company:int):
+        '''
+        Make folder to save pdf
+        Input: id company
+        Output: None
+        '''
         try:
             os.mkdir(f'{self.path_save}/{id_company}')
             os.mkdir(f'{self.path_save}/{id_company}/PDF')
@@ -79,7 +104,12 @@ class GetPDF():
 
 
     def save_check_point(self, 
-                         id_company:int): # Save checklist file
+                         id_company:int):
+        '''
+        Save check point to checklist file
+        Input: id company
+        Output: None
+        '''
         if not os.path.exists(f'{self.path_save}/{id_company}/docs/link.csv'):
             table = self.get_table(id_company=id_company)
             df = self.create_link_df(table)
@@ -97,7 +127,12 @@ class GetPDF():
         return df
 
     def get_download_pdf(self, 
-                         id_company:int): #get pdf company
+                         id_company:int):
+        '''
+        Download pdf file from link pdf
+        Input: id company
+        Output: None
+        '''
         df = self.df_company
         df_check = pd.read_csv(f'{self.path_save}/{id_company}/docs/check.csv')
 
@@ -126,12 +161,20 @@ class GetPDF():
 
 
     def save_pdf(self, 
-                 id_company:int): #Make folder, make checklist, get download
+                 id_company:int):
+        '''
+        Save pdf
+        Input: id company
+        Output: None
+        '''
         self.make_folder(id_company)
         self.save_check_point(id_company)
         self.get_download_pdf(id_company)
 
-    def get_all_com(self): #Get all company and save log file
+    def get_all_com(self):
+        '''
+        Get all company
+        '''
         logging.basicConfig(filename=self.log_path, level=logging.INFO)
         lst_com = pd.read_csv(self.path_all_com)
         if 'check' not in lst_com.columns:
