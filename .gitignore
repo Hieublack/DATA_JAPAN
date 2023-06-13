@@ -1,0 +1,16 @@
+*.pyc
+*.nbc
+*.nbi
+
+/venv
+**/__pycache__/
+**/.ipynb_checkpoints/
+.pytest_cache
+/Data/
+# !/Data/1301/**
+# !/Data/1332/**
+# !/Data/1333/
+# !/Data/1375/
+# !/Data/5486/
+# !/Data/4232/
+

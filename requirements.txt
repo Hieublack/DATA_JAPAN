@@ -1,0 +1,13 @@
+# PyPDF2
+# bs4
+# requests
+# ocrmypdf
+# tabula-py
+# camelot-py[cv]
+# pandas
+# numpy
+
+numpy
+pandas
+selenium
+requests
