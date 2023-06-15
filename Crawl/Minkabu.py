@@ -1,5 +1,5 @@
 from .base import setup
-from .base import URL_MINKABU
+# from .base import URL_MINKABU
 import numpy as np
 import pandas as pd
 import time
@@ -8,7 +8,7 @@ import requests
 from datetime import date
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from .base.URL import PATH_SAVE
+from .base.URL import PATH_SAVE, URL_MINKABU
 
 
 
@@ -21,7 +21,7 @@ class Minkabu(setup.Setup):
     def __init__(self, path_save= PATH_SAVE):
         super().__init__(type_tech = "Selenium", source = "Minkabu")
         self.URL_MINKABU_CLOSE = URL_MINKABU["PRICE_CLOSE"]
-        self.path_save = f"{path_save}/Minkabu"
+        self.path_save = f"{path_save}/{self.source}"
 
         self.checkPathExistAndCreatePath()
 
@@ -81,4 +81,5 @@ class Minkabu(setup.Setup):
             self.saveDataFrameCSV(df_price, symbol)
         
 
+#################DONE##############################
 

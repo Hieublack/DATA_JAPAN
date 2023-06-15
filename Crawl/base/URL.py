@@ -3,7 +3,8 @@ PATH_SAVE = "E:/JAPAN/DATA_JAPAN/SAVE"
 
 TIMELINE = {
     "START_DATE": "01/01/1950",
-    "END_DATE": "11/06/2023"}
+    "END_DATE": "11/06/2023",
+    'CURRENT_YEAR': "2023"}
 
 
 URL_YAHOOFINANCEJP = {
@@ -35,7 +36,7 @@ URL_MARKETWATCH = {
     "TREASURYSHARES":           "",
     "DIVIDENDCASH":             "",
     "DIVIDENDSHARE":            "",
-    "PRICE_CLOSE":              "",
+    "PRICE_CLOSE":              "https://www.marketwatch.com/investing/stock/SYMBOL/downloaddatapartial?startdate=STARTDATE%2000:00:00&enddate=ENDDATE%2000:00:00&daterange=d30&frequency=p1d&csvdownload=true&downloadpartial=false&newdates=false&countrycode=jp",
     "ORDERINGSTATISTICS":       "",
     "DATEUPEXCHANGE":           "",
     "DATEDOWNEXCHANGE":         ""
@@ -69,7 +70,7 @@ URL_BUFFETT = {
     "TREASURYSHARES":           "",
     "DIVIDENDCASH":             "",
     "DIVIDENDSHARE":            "",
-    "PRICE_CLOSE":              "",
+    "PRICE_CLOSE":              "https://www.buffett-code.com/company/SYMBOL/",
     "ORDERINGSTATISTICS":       "",
     "DATEUPEXCHANGE":           "",
     "DATEDOWNEXCHANGE":         ""

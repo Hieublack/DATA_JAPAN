@@ -1,45 +1,44 @@
-import requests as r
+import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from selenium.webdriver.common.by import By
 from collections import Counter
+from selenium.webdriver.common.by import By
+from .base import URL_IRBANK
 
 class Irbank:
 
     def __init__(self) -> None:
         pass
 
-    def getCcode(self, f_code):
+    def getCcode(self, symbol):
         '''Get the company code from financial code
-
             Parameters
             ----------
-            f_code : int
+            symbol : int
                 Financial code
             
             Returns
             -------
-            [f_code, c_code] : list with shape of (2,)
-                Pair of financial code and company code
+            [symbol, c_code] : list with shape of (2,)
+            Pair of financial code and company code
         
         '''
-        link = f"https://irbank.net/{f_code}/reports"
-        session = r.Session()
+        link = f"https://irbank.net/{symbol}/reports"
+        session = requests.Session()
         try:
             response = session.get(link)
             if response.status_code == 200:
                 report_url = response.url
                 c_code = report_url.split("/")[3]
-                return [f_code, c_code]
+                return [symbol, c_code]
             else:
-                print(f"Something wrong with {f_code}")
+                print(f"Something wrong with {symbol}")
                 return [None, None]
-        except r.exceptions.RequestException:
+        except requests.exceptions.RequestException:
             return [None, None]
 
     def getValidCodes(self, ccode, report_link=None):
         ''' Extract all report codes from financial report link, or from given company code (ccode)
-
             .. note::
             This method is only work with irbank report link, 
             and with only format like table this link: https://irbank.net/E00015/reports
@@ -62,7 +61,7 @@ class Irbank:
         else:
             link = f"https://irbank.net/{ccode}/reports"
 
-        rs = r.get(link)
+        rs = requests.get(link)
         rsp = BeautifulSoup(rs.content, "html.parser")
         table = rsp.find("table")
         stock_slice_batch = pd.read_html(str(table), extract_links="all")[0]
@@ -197,7 +196,6 @@ class Irbank:
             ----------
             dfs : list
                 List of dataframes
-
             Returns
             -------
             dict_data : dictionary
@@ -222,3 +220,5 @@ class Irbank:
                     dict_data[k].append("")
 
         return dict_data
+
+
