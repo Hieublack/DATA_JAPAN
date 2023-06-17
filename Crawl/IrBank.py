@@ -1,44 +1,113 @@
-import requests
+from .base import URL_IRBANK
+
+import requests as r
 import pandas as pd
 from bs4 import BeautifulSoup
-from collections import Counter
 from selenium.webdriver.common.by import By
-from .base import URL_IRBANK
+from collections import Counter
+from tqdm import tqdm
+
+from selenium import webdriver
+from selenium.webdriver import chrome
+from selenium.webdriver import edge
 
 class Irbank:
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, browser="chrome", exe_path=None) -> None:
+        self.browser = browser
+        self.exe_path = exe_path
+        if browser == "edge":
+            self.options = edge.options.Options()
+            self.options.add_argument("--headless=new")
+        elif browser == "chrome":
+            self.options = chrome.options.Options()
+            self.options.add_argument("--headless=new")
+        self.newDriver()
+            
+    def newDriver(self):
+        if self.browser == "edge":
+            self.driver = webdriver.Edge(options=self.options)
+        elif self.browser == "chrome":
+            self.driver = webdriver.Chrome(options=self.options)
 
-    def getCcode(self, symbol):
-        '''Get the company code from financial code
+    def closeDriver(self):
+        self.driver.close()
+
+    def setDocumentLink(self, company_code, document_code, report_type):
+        '''Get the document link from company code, document code and report type
+
             Parameters
             ----------
-            symbol : int
-                Financial code
+            company_code : str
+                Company code 
+
+            document_code : str
+                Document code 
+
+            report_type : str
+                Report type
             
             Returns
             -------
-            [symbol, c_code] : list with shape of (2,)
-            Pair of financial code and company code
+            link : str
+                Document link
         
         '''
-        link = f"https://irbank.net/{symbol}/reports"
-        session = requests.Session()
+        link = URL_IRBANK["DOCUMENT_LINK"]
+        link = link.replace("company_code", str(company_code))
+        link = link.replace("document_code", str(document_code))
+        link = link.replace("report_type", str(report_type))
+        return link
+    
+    def setReportLink(self, code):
+        '''Get the report link from financial code
+
+            Parameters
+            ----------
+            code : int
+                Financial code 
+            
+            Returns
+            -------
+            link : str
+                Report link
+        
+        '''
+        link = URL_IRBANK["REPORT_LINK"]
+        link = link.replace("financial_code", str(code))
+        return link
+
+    def getCompanyCode(self, f_code):
+        '''Get the company code from financial code
+
+            Parameters
+            ----------
+            f_code : int
+                Financial code 
+            
+            Returns
+            -------
+            [f_code, c_code] : list with shape of (2,)
+                Pair of financial code and company code
+        
+        '''
+        link = self.setReportLink(f_code)
+        session = r.Session()
         try:
             response = session.get(link)
             if response.status_code == 200:
                 report_url = response.url
                 c_code = report_url.split("/")[3]
-                return [symbol, c_code]
+                return [f_code, c_code]
             else:
-                print(f"Something wrong with {symbol}")
+                print(f"Something wrong with {f_code}")
                 return [None, None]
-        except requests.exceptions.RequestException:
+        except r.exceptions.RequestException:
             return [None, None]
 
-    def getValidCodes(self, ccode, report_link=None):
-        ''' Extract all report codes from financial report link, or from given company code (ccode)
+    def getValidDocumentCodes(self, ccode, report_link=None):
+        ''' Extract all document codes from financial report link, or from given company code (ccode)
+
             .. note::
             This method is only work with irbank report link, 
             and with only format like table this link: https://irbank.net/E00015/reports
@@ -59,9 +128,9 @@ class Irbank:
         if report_link is not None:
             link = report_link
         else:
-            link = f"https://irbank.net/{ccode}/reports"
-
-        rs = requests.get(link)
+            link = self.setReportLink(ccode)
+        rs = r.get(link)
+        
         rsp = BeautifulSoup(rs.content, "html.parser")
         table = rsp.find("table")
         stock_slice_batch = pd.read_html(str(table), extract_links="all")[0]
@@ -84,8 +153,8 @@ class Irbank:
                     if t[1] == key:
                         stock_slice_batch[col][row] = dict_[key]
 
-        fy_report_codes = stock_slice_batch[("通期", None)]
-        fy_old_report_codes = stock_slice_batch[("年度", None)]
+        fy_report_codes = stock_slice_batch[("通期", None)].to_list()
+        fy_old_report_codes = stock_slice_batch[("年度", None)].to_list()
         fy_report_links = fy_report_codes + fy_old_report_codes
 
         report_codes = []
@@ -95,7 +164,7 @@ class Irbank:
 
         return report_codes
 
-    def normalize_series(self, series, delimiter="__"):
+    def normalizeSeries(self, series, delimiter="__"):
         '''Normalize series of string
 
             Parameters
@@ -125,7 +194,7 @@ class Irbank:
                 series[i] = suff
         return series
 
-    def get_data(self, table, useAllColumns = False):
+    def getDataFromTable(self, table, useAllColumns = False):
         '''Get the data from the given table with irbank format.
             The table includes 1 column for title, and others are content columns of, each column is differennt year
             In the title columns, each row has its intent and wil be crawled as format:
@@ -180,7 +249,7 @@ class Irbank:
                         r.append(col.text.replace("\n", " "))
             data.append(r)
         data = pd.DataFrame(data)
-        data.iloc[:, 0] = self.normalize_series(data.iloc[:, 0])
+        data.iloc[:, 0] = self.normalizeSeries(data.iloc[:, 0])
 
         if len(data.columns) > 2:
             first_column = data.columns[0]
@@ -196,29 +265,119 @@ class Irbank:
             ----------
             dfs : list
                 List of dataframes
+
             Returns
             -------
-            dict_data : dictionary
-                Dictionary with key is the unique titles from all dataframe in dfs
+            s : Dataframe
+                Dataframe with key is the unique titles from all dataframe in dfs
         
         '''
-        v_index_val = []
-        for df in dfs:
-            for v in df.iloc[:, 0]:
-                if v not in v_index_val:
-                    v_index_val.append(v)
+        s = pd.concat([x.set_index(0) for x in dfs], axis = 1, keys=range(len(dfs)))
+        s.columns = s.columns.map('{0[1]}_{0[0]}'.format)
+        s = s.reset_index()
+        s.columns = s.iloc[0, :]
+        s = s.iloc[1:, :]
+        return s
+    
+    def getDataFromDocumentCode(self, document_code, code, by="financial_code", report_type="pl", useAllColumns=False):
+        '''Get data from given document code 
+        
+            Parameters
+            ----------
+            document_code : str
+                Document code
 
-        dict_data = {k: [] for k in v_index_val}
+            code : str
+                Company code or Financial code
 
-        for df in dfs:
-            for k in v_index_val:
-                index_column = df.iloc[:, 0]
-                if k in index_column.tolist():
-                    idx = index_column[index_column == k].index[0]
-                    dict_data[k].append(df.iloc[idx, -1])
-                else:
-                    dict_data[k].append("")
+            by : str
+                Define type of code
 
-        return dict_data
+            report_type : str
+                Define type of report (profit and loss or balance sheet)
+            
+            useAllColumns : bool
+                Extract all columns or not
 
+            Returns
+            -------
+            dt_tables : list of Dataframe
+                List of Dataframe, each dataframe has two column, title and year
+        
+        '''
+        if by == "finacial_code":
+            company_code = self.getCompanyCode(code)[1]
+        elif by == "company_code":
+            company_code = code
+        else:
+            raise "Only valid with financial code or company code"
+        
+        if report_type not in ("pl", "bs"):
+            raise "Only valid with Income Statent or Balance Sheet type"
+        
+        link = self.setDocumentLink(company_code, document_code, report_type)
+        dt_tables = []
+        try:
+            self.driver.get(link)
+            table = self.driver.find_element(By.ID, f"c_{report_type}1")
+        except:
+            print(f"============ {document_code} has no {report_type} data")
+            return dt_tables
+        dt_tables = self.getDataFromTable(table, useAllColumns)
+        return dt_tables
+    
+    def getData(self, code, by="financial_code", report_type="pl"):
+        '''Get data from given code 
+        
+            Parameters
+            ----------
+            code : str
+                Company code or Financial code
 
+            by : str
+                Define type of code
+
+            report_type : str
+                Define type of report (profit and loss or balance sheet)
+            
+            Returns
+            -------
+            data : Dataframe
+                Dataframe with column as list of year, and index as list of title
+        
+        '''
+        self.newDriver()
+        if by == "finacial_code":
+            company_code = self.getCompanyCode(code)[1]
+        elif by == "company_code":
+            company_code = code
+        else:
+            raise "Only valid with financial code or company code"
+        
+        if report_type not in ("pl", "bs"):
+            raise "Only valid with Income Statent or Balance Sheet type"
+        
+        dfs = []
+
+        try:
+            document_codes = self.getValidDocumentCodes(company_code)
+        except:
+            print(f"============ {company_code} has no {report_type} data")
+            return data
+        
+        for i in tqdm(range(len(document_codes))):
+            print(document_codes[i])
+            dt_tables = self.getDataFromDocumentCode(
+                            document_codes[i],
+                            company_code,
+                            by="company_code",
+                            report_type=report_type,
+                            useAllColumns=(i == len(document_codes) - 1)
+                        )
+            dfs.extend(dt_tables)
+        try:
+            data = self.concat_data(dfs)
+        except:
+            data = ""
+        self.closeDriver()
+        return data
