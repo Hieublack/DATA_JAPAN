@@ -3,11 +3,11 @@ from selenium.webdriver.common.by import By
 from .base import URL_BUFFETT, PATH_SAVE, TIMELINE
 import pandas as pd
 import time
+from .base import setup
+
 
 import os, time, subprocess
-import pandas as pd
 import numpy as np
-import warnings
 import requests
 from selenium import webdriver
 from bs4 import BeautifulSoup
@@ -16,55 +16,52 @@ from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
 from webdriver_manager.firefox import GeckoDriverManager
+import warnings
 warnings.simplefilter("ignore", UserWarning)
+# from pandas.errors import SettingWithCopyWarning
+# warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
-from pandas.errors import SettingWithCopyWarning
-warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
-class Buffet:
+class Buffet(setup.Setup):
     def __init__(self, path_save= PATH_SAVE):
-        super().__init__(type_tech = "Request", source = "Buffet")
-        
+        super().__init__(type_tech = "Selenium", source = "Buffet")
+        self.path_save = f"{path_save}/{self.source}"
+        self.checkPathExistAndCreatePath()
 
-
-    def crawlInfo(br, comp, folderPath):
+    def crawlInfo(self, comp):
         '''
         Crawl and create file info company
 
         Parameters
         ------- 
-            br: browser (selenium): br = webdriver.Edge()
             comp: company
-            folderPath: Path to folder stores company info files 
         -------
 
         '''
 
 
-        br.get(f'https://www.buffett-code.com/company/{comp}/')
+        self.driver.get(f'https://www.buffett-code.com/company/{comp}/')
 
-        # i+=1
-        # if i%60 == 0:
-        #     sleep(1500)
+
         time.sleep(60)
 
-        if br.current_url == f'https://www.buffett-code.com/company/{comp}/':
+        if self.driver.current_url == f'https://www.buffett-code.com/company/{comp}/':
             
             tables = []
             try:
-                table_1 = br.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[2]/div[4]/div/div[2]/table')
+                table_1 = self.findElementByXPath(element_path= '/html/body/div[1]/div[2]/div/div[2]/div[4]/div/div[2]/table')
                 tables.append(table_1)
             except:
                 print(comp, "  table 1")
             
             try:
-                table_2 = br.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[2]/div[4]/div/div[5]/table')
+                table_2 = self.findElementByXPath(element_path= '/html/body/div[1]/div[2]/div/div[2]/div[4]/div/div[5]/table')
                 tables.append(table_2)
             except:
                 print(comp, "  table 2")
             
             try:
-                table_3 = br.find_element(By.XPATH, '/html/body/div[1]/div[2]/div/div[2]/div[10]/div/div[2]/table')
+                table_3 = self.findElementByXPath(element_path= '/html/body/div[1]/div[2]/div/div[2]/div[10]/div/div[2]/table')
                 tables.append(table_3)
             except:
                 print(comp, "  table 3")
@@ -72,7 +69,6 @@ class Buffet:
 
             dfs = [['Type'],['Value']]
             for tb in tables:
-                
                 rows = tb.find_elements(By.XPATH, ".//tbody/tr")
                 for row in range(1,len(rows)+1):
                     values = []
@@ -86,7 +82,7 @@ class Buffet:
         df_2 = pd.DataFrame(dfs[1])
 
         df_ = pd.concat([df_1,df_2], axis = 1)
-        df_.to_csv(f"{folderPath}/{comp}.csv", header = False ,index = False)
+        self.saveDataFrameCSV(dataframe= df_, file_name= comp)
 
 
 
