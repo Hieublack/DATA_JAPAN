@@ -35,9 +35,8 @@ class Setup():
         chrome_options = webdriver.ChromeOptions()
         # hide selemium's window
         chrome_options.add_argument("--headless")
-        if self.source == "Minkabu":
-            chrome_options.add_argument("--incognito")  # inprivate mode
-            chrome_options.add_argument("--window-size=1920x1080")
+        chrome_options.add_argument("--incognito")  # inprivate mode
+        chrome_options.add_argument("--window-size=1920x1080")
 
         self.driver = webdriver.Chrome(options=chrome_options)
 
@@ -70,9 +69,9 @@ class Setup():
             pass
         return element
 
-    def clickSomethingByXPath(self, element_path):
+    def clickSomethingByXPath(self, element_path, waiting_time=10):
         try:
-            element = WebDriverWait(self.driver, 5).until(
+            element = WebDriverWait(self.driver, waiting_time).until(
                 EC.presence_of_element_located((By.XPATH, element_path))
             )
             element.click()

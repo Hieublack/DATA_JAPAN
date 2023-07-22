@@ -1,9 +1,8 @@
-# PATH_DRIVER = "C:/Program Files/chromedriver.exe"
-PATH_SAVE = "E:/JAPAN/DATA_JAPAN/SAVE"
+PATH_SAVE = "E:/BANGIAOVIS/DATA_JAPAN/SAVE"
 
 TIMELINE = {
     "START_DATE": "01/01/1950",
-    "END_DATE": "11/06/2023",
+    "END_DATE": "22/07/2023",
     'CURRENT_YEAR': "2023"}
 
 
@@ -21,10 +20,10 @@ URL_YAHOOFINANCEJP = {
     "PRICE_CLOSE":              "https://finance.yahoo.co.jp/quote/SYMBOL.T/history?from=STARTDATE&to=ENDDATE&timeFrame=d&page=PAGE", #(SYMBOL, STARTDATE, ENDDATE, PAGE)
     "ORDERINGSTATISTICS":       "",
     "DATEUPEXCHANGE":           "",
-    "DATEDOWNEXCHANGE":         ""
+    "DATEDOWNEXCHANGE":         "",
+    "INFORMATION":              "https://finance.yahoo.co.jp/quote/SYMBOL/profile", #(SYMBOL)
     }
-    
-
+       
 URL_MARKETWATCH = {
     "COMPANY_LISTING":          "",
     "COMPANY_DELISTING":        "",
@@ -77,8 +76,8 @@ URL_BUFFETT = {
     }
 
 URL_IRBANK ={
-    "REPORT_LINK": "https://irbank.net/financial_code/reports",
-    "DOCUMENT_LINK":  "https://irbank.net/company_code/document_code/report_type",
+    "REPORT_LINK":              "https://irbank.net/financial_code/reports",
+    "DOCUMENT_LINK":            "https://irbank.net/company_code/document_code/report_type",
     "LIST_COMPANIES":           "",
     "COMPANY_LISTING":          "",
     "COMPANY_DELISTING":        "",
@@ -96,7 +95,22 @@ URL_IRBANK ={
     "DATEDOWNEXCHANGE":         ""
     }
 
-
+URL_MORNINGSTAR = {
+    "COMPANY_LISTING":          "",
+    "COMPANY_DELISTING":        "",
+    "BALANCE_SHEET":            "",
+    "INCOME_STATEMENT":         "",
+    "CASH_FLOW":                "",
+    "VOLUME_NOW":               "",
+    "VOLUMEADDITIONALEVENTS":   "",
+    "TREASURYSHARES":           "",
+    "DIVIDENDCASH":             "https://www.morningstar.com/stocks/xtks/SYMBOL/chart?fbclid=IwAR0jOHbv4SJkbkJQo4P2yVIPI8J6zznDeA4YvzpzSFQEAvhBwc2f6ZiVXqI",
+    "DIVIDENDSHARE":            "",
+    "PRICE_CLOSE":              "",
+    "ORDERINGSTATISTICS":       "",
+    "DATEUPEXCHANGE":           "",
+    "DATEDOWNEXCHANGE":         ""
+    }
 
 
 
